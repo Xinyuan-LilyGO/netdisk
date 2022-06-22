@@ -623,6 +623,29 @@ bool NetDisk::upload(File *f, int timeout, String filename)
 }
 
 
+String calculateMD5(uint8_t *buf, size_t size)
+{
+    MD5Builder b;
+    size_t i = 0;
+
+    b.begin();
+    if (size > ((1 << 16) - 1))
+    {
+        for (i = 0; i < size / 4096; i++)
+        {
+            b.add(&buf[i * 4096], 4096);
+        }
+        b.add(&buf[i * 4096], size - (i * 4096));
+    }
+    else
+    {
+        b.add(buf, size);
+    }
+
+    b.calculate();
+    return b.toString();
+}
+
 bool NetDisk::upload(uint8_t *buf, size_t size, int timeout, String filename)
 {
     int status = 0;
@@ -657,12 +680,11 @@ bool NetDisk::upload(uint8_t *buf, size_t size, int timeout, String filename)
         switch (status)
         {
             case 0:
-                MD5Builder b;
-                b.begin();
-                b.add(buf, size);
-                b.calculate();
-                _md5 = b.toString();
+            {
+                _md5 = calculateMD5(buf, size);
+                log_i("buf md5: %s", _md5.c_str());
                 status++;
+            }
             break;
 
             case 1:
@@ -703,7 +725,7 @@ bool NetDisk::upload(uint8_t *buf, size_t size, int timeout, String filename)
                 delay(200);
             break;
         }
-        if (count++ > (timeout *1000) /200)
+        if (count++ > timeout)
         {
             // time out
             return false;
@@ -711,3 +733,4 @@ bool NetDisk::upload(uint8_t *buf, size_t size, int timeout, String filename)
     }
     return false;
 }
+
