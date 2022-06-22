@@ -628,7 +628,7 @@ bool NetDisk::upload(uint8_t *buf, size_t size, int timeout, String filename)
     int status = 0;
     int count = 0;
 
-    if (size = 0)
+    if (size == 0)
     {
         log_w("length is too small");
         return false;

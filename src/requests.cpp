@@ -355,7 +355,7 @@ int Requests::sendBufferBody(uint8_t * buff, size_t size)
 
         bytesWritten += _client->write(&buff[bytesWritten], buff_size);
         delay(1);
-        len -= bytesWritten;
+        len = size - bytesWritten;
 
         if (buff_size > len)
         {
